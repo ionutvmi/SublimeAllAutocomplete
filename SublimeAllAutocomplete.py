@@ -5,6 +5,7 @@ import sublime_plugin
 import sublime
 import re
 import time
+from os.path import basename
 
 
 # limits to prevent bogging down the system
@@ -87,12 +88,19 @@ class SubLimeallautocomplete(sublime_plugin.EventListener):
 
             view_words = self.filter_words(view_words)
             view_words = self.fix_truncation(v, view_words)
-            words += view_words
+            words += [(w, v) for w in view_words]
+            # words += view_words
 
         words = self.without_duplicates(words)
         if DEBUG: print("SAA: {0} words found".format(len(words)))
 
-        matches = [(w, w.replace('$', '\\$')) for w in words]
+        # matches = [(w, w.replace('$', '\\$')) for w in words]
+        matches = []
+        for w, v in words:
+            if v.id != view.id:
+                matches.append((w + ' (%s)' % basename(v.file_name()), w.replace('$', '\\$')))
+            else:
+                matches.append((w, w.replace('$', '\\$')))
         return matches
 
     def is_need_to_be_hacked(self, v, dash_hack_sytaxes):
@@ -125,9 +133,11 @@ class SubLimeallautocomplete(sublime_plugin.EventListener):
     def without_duplicates(self, words):
         if DEBUG: print("SAA: cleaning duplicates")
         result = []
-        for w in words:
-            if w not in result:
-                result.append(w)
+        used_words = []
+        for w, v in words:
+            if w not in used_words:
+                used_words.append(w)
+                result.append((w, v))
         return result
 
 
