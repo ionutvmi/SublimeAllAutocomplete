@@ -6,19 +6,20 @@ import sublime
 import re
 import time
 
+
 # limits to prevent bogging down the system
 MIN_WORD_SIZE = 3
 MAX_WORD_SIZE = 30
 
 MAX_VIEWS = 20
-MAX_WORDS_PER_VIEW = 100
+MAX_WORDS_PER_VIEW = 1000
 MAX_FIX_TIME_SECS_PER_VIEW = 0.01
 
-#Change this variable to True to se debug output
+# Change this variable to True to se debug output
 DEBUG = False
 
 class SubLimeallautocomplete(sublime_plugin.EventListener):
-    #default settings
+    # default settings
     dash_hack_sytaxes = ["source.scss","source.sass","source.css"]
     return_nothing_on_empty = True
     not_search_in_current = True
@@ -26,7 +27,7 @@ class SubLimeallautocomplete(sublime_plugin.EventListener):
     def __init__(self):
         if DEBUG: print("initializing Sublimeallautocomplete(SAA) plugin")
 
-    #Loading settings when view is activated
+    # Loading settings when view is activated
     def on_activated(self,view):
         if DEBUG: print("\nActivating SAA for view",view)
         self.plugin_settings = sublime.load_settings('SublimeAllAutocomplete.sublime-settings')
@@ -81,7 +82,7 @@ class SubLimeallautocomplete(sublime_plugin.EventListener):
             if self.is_need_to_be_hacked(v, self.dash_hack_sytaxes):
                 # apply hack for css and sass only
                 view_words = self.extract_completions_wdash(v,prefix);
-            else:  
+            else:
                 view_words = v.extract_completions(prefix, location)
 
             view_words = self.filter_words(view_words)
@@ -138,14 +139,16 @@ class SubLimeallautocomplete(sublime_plugin.EventListener):
         start_time = time.time()
 
         for i, w in enumerate(words):
-            #The word is truncated if and only if it cannot be found with a word boundary before and after
+            # The word is truncated if and only if it cannot be found
+            # with a word boundary before and after
 
             # this fails to match strings with trailing non-alpha chars, like
             # 'foo?' or 'bar!', which are common for instance in Ruby.
             match = view.find(r'\b' + re.escape(w) + r'\b', 0)
             truncated = self.is_empty_match(match)
             if truncated:
-                #Truncation is always by a single character, so we extend the word by one word character before a word boundary
+                # Truncation is always by a single character, so we extend the
+                # word by one word character before a word boundary
                 extended_words = []
                 view.find_all(r'\b' + re.escape(w) + r'\w\b', 0, "$0", extended_words)
                 if len(extended_words) > 0:
