@@ -13,7 +13,7 @@ MIN_WORD_SIZE = 3
 MAX_WORD_SIZE = 30
 
 MAX_VIEWS = 20
-MAX_WORDS_PER_VIEW = 1000
+MAX_WORDS_PER_VIEW = 100
 MAX_FIX_TIME_SECS_PER_VIEW = 0.01
 
 # Change this variable to True to se debug output
@@ -98,7 +98,7 @@ class SubLimeallautocomplete(sublime_plugin.EventListener):
         matches = []
         for w, v in words:
             if v.id != view.id:
-                matches.append((w + ' (%s)' % basename(v.file_name()), w.replace('$', '\\$')))
+                matches.append((w + '\t(%s)' % basename(v.file_name()), w.replace('$', '\\$')))
             else:
                 matches.append((w, w.replace('$', '\\$')))
         return matches
